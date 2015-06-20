@@ -519,6 +519,7 @@ s3c24xx_serial_rx_chars(int irq, void *dev_id)
 {
 	struct s3c24xx_uart_port *ourport = dev_id;
 	struct uart_port *port = &ourport->port;
+	nt timeout = 10000;
 	struct tty_struct *tty = port->state->port.tty;
 	unsigned long flags;
 #ifndef CONFIG_SERIAL_SAMSUNG_DMA
@@ -1027,6 +1028,8 @@ static void s3c24xx_serial_pm(struct uart_port *port, unsigned int level,
 
 	switch (level) {
 	case 3:
+	while (--timeout && !s3c24xx_serial_txempty_nofifo(port))
+			udelay(100);
 		if (!IS_ERR(ourport->baudclk))
 			clk_disable(ourport->baudclk);
 
